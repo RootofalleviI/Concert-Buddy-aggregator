@@ -7,9 +7,14 @@ import requests
 from fastapi import FastAPI, HTTPException
 
 SAMPLE_USER_ID = '130bd19b-92b6-4dd7-90ef-c477bca9a824'
-USER_MICROSERVICE_URL = 'http://127.0.0.1:8080'
+USER_MICROSERVICE_URL = 'http://127.0.0.1:8080'  # TODO: Replace this when project is deployed
 
 app = FastAPI()
+
+
+@app.get("/")
+def root():
+    return 'Hello World!'
 
 
 @app.get("/{user_id}")
