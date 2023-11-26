@@ -21,45 +21,46 @@ def root():
     return 'Hello World!'
 
 
-# @app.get("/{user_id}/{concert_id}")
-# async def main_async(user_id: str, concert_id: str):
-#     async def task_wrapper(task: str, coro: any):
-#         return task, await coro
-#
-#     tasks = [
-#         task_wrapper('info', get_user_info(user_id)),
-#         task_wrapper('songs', get_user_songs(user_id)),
-#         task_wrapper('concert', get_concert_info(concert_id)),
-#         task_wrapper('matches', get_user_matches(user_id, concert_id))
-#     ]
-#
-#     results = {}
-#     for future in asyncio.as_completed(tasks):
-#         name, result = await future
-#         if name == 'info':
-#             results['info'] = parse_user_info(result)
-#         elif name == 'songs':
-#             results['songs'] = parse_user_songs(result)
-#         elif name == 'concert':
-#             results['concert'] = parse_concert_info(result)
-#         elif name == 'matches':
-#             results['matches'] = parse_user_matches(result)
-#
-#     return results
-
 @app.get("/{user_id}/{concert_id}")
-async def main_sync(user_id: str, concert_id: str):
-    user_info = await get_user_info(user_id)
-    user_songs = await get_user_songs(user_id)
-    concert_info = await get_concert_info(concert_id)
-    user_matches = await get_user_matches(user_id, concert_id)
+async def main_async(user_id: str, concert_id: str):
+    async def task_wrapper(task: str, coro: any):
+        return task, await coro
 
-    return {
-        'info': parse_user_info(user_info),
-        'songs': parse_user_songs(user_songs),
-        'concert': parse_concert_info(concert_info),
-        'matches': parse_user_matches(user_matches)
-    }
+    tasks = [
+        task_wrapper('info', get_user_info(user_id)),
+        task_wrapper('songs', get_user_songs(user_id)),
+        task_wrapper('concert', get_concert_info(concert_id)),
+        task_wrapper('matches', get_user_matches(user_id, concert_id))
+    ]
+
+    results = {}
+    for future in asyncio.as_completed(tasks):
+        name, result = await future
+        if name == 'info':
+            results['info'] = parse_user_info(result)
+        elif name == 'songs':
+            results['songs'] = parse_user_songs(result)
+        elif name == 'concert':
+            results['concert'] = parse_concert_info(result)
+        elif name == 'matches':
+            results['matches'] = parse_user_matches(result)
+
+    return results
+
+
+# @app.get("/{user_id}/{concert_id}")
+# async def main_sync(user_id: str, concert_id: str):
+#     user_info = await get_user_info(user_id)
+#     user_songs = await get_user_songs(user_id)
+#     concert_info = await get_concert_info(concert_id)
+#     user_matches = await get_user_matches(user_id, concert_id)
+#
+#     return {
+#         'info': parse_user_info(user_info),
+#         'songs': parse_user_songs(user_songs),
+#         'concert': parse_concert_info(concert_info),
+#         'matches': parse_user_matches(user_matches)
+#     }
 
 
 # =====================================
@@ -242,4 +243,4 @@ def parse_user_matches(data: Dict) -> Match:
 
 if __name__ == "__main__":
     # uvicorn.run(app, host="0.0.0.0", port=8000)
-    asyncio.run(main_sync(SAMPLE_USER_ID, SAMPLE_CONCERT_ID))
+    asyncio.run(main_async(SAMPLE_USER_ID, SAMPLE_CONCERT_ID))
