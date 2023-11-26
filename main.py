@@ -1,6 +1,7 @@
 import asyncio
 import dataclasses
 import datetime
+import random
 from typing import Dict, List
 
 import httpx
@@ -74,6 +75,7 @@ async def get_user_info(user_id: str):
     url = f'{USER_MICROSERVICE_URL}/api/v1/users/{user_id}'
     async with httpx.AsyncClient() as client:
         try:
+            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -118,6 +120,7 @@ async def get_user_songs(user_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
+            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -174,6 +177,7 @@ async def get_concert_info(concert_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
+            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -214,6 +218,7 @@ async def get_user_matches(user_id: str, concert_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
+            await asyncio.sleep(random.random())
             response = await client.post(url, data={'userId': user_id, 'concertId': concert_id})
 
             if response.status_code == 200:
