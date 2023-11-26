@@ -54,7 +54,7 @@ async def get_user_info(user_id: str):
 
             if response.status_code == 200:
                 res = response.json()
-                print(f"Got user info: {res}")
+                print(f"Got user info")
                 return res
             else:
                 raise HTTPException(status_code=404, detail="User not found")
@@ -98,7 +98,7 @@ async def get_user_songs(user_id: str):
 
             if response.status_code == 200:
                 res = response.json()
-                print(f"Got user songs: {res}")
+                print(f"Got user songs")
                 return res
             else:
                 raise HTTPException(status_code=404, detail="Songs not found for the user")
@@ -154,7 +154,7 @@ async def get_concert_info(concert_id: str):
 
             if response.status_code == 200:
                 res = response.json()
-                print(f"Got concert info: {res}")
+                print(f"Got concert info")
                 return res
             else:
                 raise HTTPException(status_code=404, detail="Concert not found")
@@ -194,7 +194,7 @@ async def get_user_matches(user_id: str, concert_id: str):
 
             if response.status_code == 200:
                 res = response.json()
-                print(f"Got user matches: {res}")
+                print(f"Got user matches")
                 return res
             else:
                 raise HTTPException(status_code=404,
