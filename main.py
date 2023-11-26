@@ -47,7 +47,6 @@ async def main(user_id: str, concert_id: str):
         elif name == 'matches':
             results['matches'] = parse_user_matches(result)
 
-    print(results)
     return results
 
 
