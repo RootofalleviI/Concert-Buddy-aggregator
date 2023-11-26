@@ -24,7 +24,7 @@ def root():
 
 
 @app.get("/{user_id}/{concert_id}")
-async def main(user_id: str, concert_id: str):
+async def main_async(user_id: str, concert_id: str):
     async def task_wrapper(task: str, coro: any):
         return task, await coro
 
@@ -234,4 +234,4 @@ def parse_user_matches(data: Dict) -> Match:
 
 if __name__ == "__main__":
     # uvicorn.run(app, host="0.0.0.0", port=8000)
-    asyncio.run(main(SAMPLE_USER_ID, SAMPLE_CONCERT_ID))
+    asyncio.run(main_async(SAMPLE_USER_ID, SAMPLE_CONCERT_ID))
