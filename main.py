@@ -5,9 +5,7 @@ from typing import Dict, List
 
 import httpx
 import requests
-import uvicorn
 from fastapi import FastAPI, HTTPException
-import random
 
 SAMPLE_USER_ID = '0e21d65c-203a-4ba8-88f6-06cac7a0a2ca'
 SAMPLE_CONCERT_ID = 'b392da9d-3d11-4d2d-98e1-6219a9a4f056'
@@ -75,7 +73,6 @@ async def get_user_info(user_id: str):
     url = f'{USER_MICROSERVICE_URL}/api/v1/users/{user_id}'
     async with httpx.AsyncClient() as client:
         try:
-            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -120,7 +117,6 @@ async def get_user_songs(user_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
-            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -177,7 +173,6 @@ async def get_concert_info(concert_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
-            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -218,7 +213,6 @@ async def get_user_matches(user_id: str, concert_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
-            await asyncio.sleep(random.random())
             response = await client.post(url, data={'userId': user_id, 'concertId': concert_id})
 
             if response.status_code == 200:
