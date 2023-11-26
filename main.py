@@ -3,11 +3,16 @@ import dataclasses
 import datetime
 from typing import Dict, List
 
+import httpx
 import requests
+import uvicorn
 from fastapi import FastAPI, HTTPException
 
-SAMPLE_USER_ID = '130bd19b-92b6-4dd7-90ef-c477bca9a824'
-USER_MICROSERVICE_URL = 'http://127.0.0.1:8080'  # TODO: Replace this when project is deployed
+SAMPLE_USER_ID = '0e21d65c-203a-4ba8-88f6-06cac7a0a2ca'
+SAMPLE_CONCERT_ID = 'b392da9d-3d11-4d2d-98e1-6219a9a4f056'
+USER_MICROSERVICE_URL = 'http://ec2-13-59-208-208.us-east-2.compute.amazonaws.com:8012'
+FINDER_MICROSERVICE_URL = 'http://ec2-18-191-86-156.us-east-2.compute.amazonaws.com:8080'
+CONCERT_MICROSERVICE_URL = 'http://concertbuddyconcert.uc.r.appspot.com'
 
 app = FastAPI()
 
@@ -17,30 +22,45 @@ def root():
     return 'Hello World!'
 
 
-@app.get("/{user_id}")
-async def main(user_id: str):
+@app.get("/{user_id}/{concert_id}")
+async def main(user_id: str, concert_id: str):
+    user_info, user_songs, concert_info, user_matches = await asyncio.gather(
+        get_user_info(user_id),
+        get_user_songs(user_id),
+        get_concert_info(concert_id),
+        get_user_matches(user_id, concert_id)
+    )
+
     return {
-        'info': parse_user_info(get_user_info(user_id)),
-        'songs': parse_user_songs(await get_user_songs(user_id))
+        'info': parse_user_info(user_info),
+        'songs': parse_user_songs(user_songs),
+        'concert': parse_concert_info(concert_info),
+        'matches': parse_user_matches(user_matches)
     }
 
 
-def get_user_info(user_id: str):
+# =====================================
+# User Info
+# =====================================
+@app.get("/get-user-info/{user_id}")
+async def get_user_info(user_id: str):
     """
     Fetch user information from an external API for a given user ID.
     """
-    # Replace with the actual base URL of the external API
     url = f'{USER_MICROSERVICE_URL}/api/v1/users/{user_id}'
-    try:
-        response = requests.get(url)
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
 
-        if response.status_code == 200:
-            return response.json()  # Assuming the response is JSON
-        else:
-            raise HTTPException(status_code=404, detail="User not found")
+            if response.status_code == 200:
+                res = response.json()
+                print(f"Got user info: {res}")
+                return res
+            else:
+                raise HTTPException(status_code=404, detail="User not found")
 
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        except requests.RequestException as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 @dataclasses.dataclass
@@ -62,24 +82,29 @@ def parse_user_info(data: Dict):
     return UserInfo(**data)
 
 
+# =====================================
+# User Songs
+# =====================================
 @app.get("/get-user-songs/{user_id}")
 async def get_user_songs(user_id: str):
     """
     Fetch songs for a given user ID from an external API.
     """
-    # Replace with the actual base URL of the external API
     url = f'{USER_MICROSERVICE_URL}/api/v1/users/{user_id}/songs'
 
-    try:
-        response = requests.get(url)
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
 
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise HTTPException(status_code=404, detail="Songs not found for the user")
+            if response.status_code == 200:
+                res = response.json()
+                print(f"Got user songs: {res}")
+                return res
+            else:
+                raise HTTPException(status_code=404, detail="Songs not found for the user")
 
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        except requests.RequestException as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 
 @dataclasses.dataclass
@@ -113,5 +138,85 @@ def parse_user_songs(data: Dict) -> List[Song]:
         return []
 
 
-if __name__ == '__main__':
-    print(asyncio.run(main(SAMPLE_USER_ID)))
+# =====================================
+# Concert Info
+# =====================================
+@app.get("/get-concert-info/{concert_id}")
+async def get_concert_info(concert_id: str):
+    """
+    Fetch info for a given concert from an external API.
+    """
+    url = f'{CONCERT_MICROSERVICE_URL}/api/v1/concerts/{concert_id}'
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(url)
+
+            if response.status_code == 200:
+                res = response.json()
+                print(f"Got concert info: {res}")
+                return res
+            else:
+                raise HTTPException(status_code=404, detail="Concert not found")
+
+        except requests.RequestException as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+@dataclasses.dataclass
+class Concert:
+    id: str
+    name: str
+    venue: str
+    performingArtist: str
+    dateTime: str
+    genre: str
+    subGenre: str
+
+
+def parse_concert_info(data: Dict) -> Concert:
+    return Concert(**data)
+
+
+# =====================================
+# User Matches
+# =====================================
+@app.get("/get-user-matches/{user_id}/{concert_id}")
+async def get_user_matches(user_id: str, concert_id: str):
+    """
+    Fetch matches at a given concert for a given user ID from an external API.
+    """
+    url = f'{FINDER_MICROSERVICE_URL}/api/v1/finder/{user_id}/{concert_id}'
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(url, data={'userId': user_id, 'concertId': concert_id})
+
+            if response.status_code == 200:
+                res = response.json()
+                print(f"Got user matches: {res}")
+                return res
+            else:
+                raise HTTPException(status_code=404,
+                                    detail=f"Didn't find match for user {user_id} at concert {concert_id}")
+
+        except requests.RequestException as e:
+            raise HTTPException(status_code=500, detail=str(e))
+
+
+@dataclasses.dataclass
+class Match:
+    id: str
+    userId: str
+    concertId: str
+    matchedUserId: List[str]
+
+
+def parse_user_matches(data: Dict) -> Match:
+    del data['_links']
+    return Match(**data)
+
+
+if __name__ == "__main__":
+    # uvicorn.run(app, host="0.0.0.0", port=8000)
+    asyncio.run(main(SAMPLE_USER_ID, SAMPLE_CONCERT_ID))
