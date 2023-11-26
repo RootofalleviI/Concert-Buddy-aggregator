@@ -67,7 +67,7 @@ async def main_async(user_id: str, concert_id: str):
 # =====================================
 # User Info
 # =====================================
-@app.get("/get-user-info/{user_id}")
+# @app.get("/get-user-info/{user_id}")
 async def get_user_info(user_id: str):
     """
     Fetch user information from an external API for a given user ID.
@@ -111,7 +111,7 @@ def parse_user_info(data: Dict):
 # =====================================
 # User Songs
 # =====================================
-@app.get("/get-user-songs/{user_id}")
+# @app.get("/get-user-songs/{user_id}")
 async def get_user_songs(user_id: str):
     """
     Fetch songs for a given user ID from an external API.
@@ -168,7 +168,7 @@ def parse_user_songs(data: Dict) -> List[Song]:
 # =====================================
 # Concert Info
 # =====================================
-@app.get("/get-concert-info/{concert_id}")
+# @app.get("/get-concert-info/{concert_id}")
 async def get_concert_info(concert_id: str):
     """
     Fetch info for a given concert from an external API.
@@ -209,7 +209,7 @@ def parse_concert_info(data: Dict) -> Concert:
 # =====================================
 # User Matches
 # =====================================
-@app.get("/get-user-matches/{user_id}/{concert_id}")
+# @app.get("/get-user-matches/{user_id}/{concert_id}")
 async def get_user_matches(user_id: str, concert_id: str):
     """
     Fetch matches at a given concert for a given user ID from an external API.
