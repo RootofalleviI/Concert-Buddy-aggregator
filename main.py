@@ -23,6 +23,7 @@ def root():
     return 'Hello World!'
 
 
+@app.get("/{user_id}/{concert_id}")
 async def main(user_id: str, concert_id: str):
     async def task_wrapper(task: str, coro: any):
         return task, await coro
@@ -48,7 +49,6 @@ async def main(user_id: str, concert_id: str):
 
     print(results)
     return results
-
 
 
 # =====================================
