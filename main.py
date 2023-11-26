@@ -7,6 +7,7 @@ import httpx
 import requests
 import uvicorn
 from fastapi import FastAPI, HTTPException
+import random
 
 SAMPLE_USER_ID = '0e21d65c-203a-4ba8-88f6-06cac7a0a2ca'
 SAMPLE_CONCERT_ID = 'b392da9d-3d11-4d2d-98e1-6219a9a4f056'
@@ -24,19 +25,28 @@ def root():
 
 @app.get("/{user_id}/{concert_id}")
 async def main(user_id: str, concert_id: str):
-    user_info, user_songs, concert_info, user_matches = await asyncio.gather(
+    tasks = [
         get_user_info(user_id),
         get_user_songs(user_id),
         get_concert_info(concert_id),
         get_user_matches(user_id, concert_id)
-    )
+    ]
 
-    return {
-        'info': parse_user_info(user_info),
-        'songs': parse_user_songs(user_songs),
-        'concert': parse_concert_info(concert_info),
-        'matches': parse_user_matches(user_matches)
-    }
+    results = {}
+    for task in asyncio.as_completed(tasks):
+        result = await task
+        if isinstance(result, UserInfo):  # Assuming get_user_info returns an instance of UserInfo
+            results['info'] = parse_user_info(result)
+        elif isinstance(result, list):  # Assuming get_user_songs returns a list
+            # You may need to refine this condition based on the actual return type
+            results['songs'] = parse_user_songs(result)
+        elif isinstance(result, Concert):  # Assuming get_concert_info returns an instance of Concert
+            results['concert'] = parse_concert_info(result)
+        elif isinstance(result, Match):  # Assuming get_user_matches returns an instance of Match
+            results['matches'] = parse_user_matches(result)
+        # Add additional conditions as necessary for different return types
+
+    return results
 
 
 # =====================================
@@ -50,6 +60,7 @@ async def get_user_info(user_id: str):
     url = f'{USER_MICROSERVICE_URL}/api/v1/users/{user_id}'
     async with httpx.AsyncClient() as client:
         try:
+            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
@@ -94,6 +105,7 @@ async def get_user_songs(user_id: str):
 
     async with httpx.AsyncClient() as client:
         try:
+            await asyncio.sleep(random.random())
             response = await client.get(url)
 
             if response.status_code == 200:
