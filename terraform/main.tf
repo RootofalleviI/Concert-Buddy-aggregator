@@ -4,8 +4,8 @@ provider "aws" {
 }
 
 # Create a security group allowing all traffic
-resource "aws_security_group" "concert_buddy" {
-  name        = "concert-buddy"
+resource "aws_security_group" "concert_buddy_1" {
+  name        = "concert-buddy_0"
   description = "Allow all traffic"
 
   ingress {
@@ -39,7 +39,7 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "fastapi_instance" {
   ami             = data.aws_ami.ubuntu.id
   instance_type   = "t2.micro"  # Change to the instance type you need
-  security_groups = [aws_security_group.concert_buddy.name]
+  security_groups = [aws_security_group.concert_buddy_1.name]
 
   user_data = <<-EOF
     #!/bin/bash
