@@ -1,0 +1,6 @@
+name: concertbuddy
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: concertbuddy
